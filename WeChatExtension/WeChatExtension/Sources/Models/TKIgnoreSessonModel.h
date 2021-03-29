@@ -2,13 +2,13 @@
 //  TKIgnoreSessonModel.h
 //  WeChatExtension
 //
-//  Created by WeChatExtension on 2017/9/15.
-//  Copyright © 2017年 WeChatExtension. All rights reserved.
+//  Created by WeChatExtension on 2019/9/15.
+//  Copyright © 2019年 WeChatExtension. All rights reserved.
 //
 
-#import "TKBaseModel.h"
+#import "YMBaseModel.h"
 
-@interface TKIgnoreSessonModel : TKBaseModel
+@interface TKIgnoreSessonModel : YMBaseModel
 
 @property (nonatomic, copy) NSString *selfContact;
 @property (nonatomic, copy) NSString *userName;

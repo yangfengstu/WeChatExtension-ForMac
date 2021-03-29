@@ -7,13 +7,13 @@
 //
 
 #import "TKDownloadWindowController.h"
-#import "TKVersionManager.h"
-#import "TKRemoteControlManager.h"
+#import "YMVersionManager.h"
+#import "YMRemoteControlManager.h"
 
 typedef NS_ENUM(NSUInteger, TKDownloadState) {
     TKDownloadStateProgress,
     TKDownloadStateFinish,
-    TKDownloadStateError,
+    TKDownloadStateError
 };
 
 @interface TKDownloadWindowController ()
@@ -29,7 +29,8 @@ typedef NS_ENUM(NSUInteger, TKDownloadState) {
 
 @implementation TKDownloadWindowController
 
-+ (instancetype)downloadWindowController {
++ (instancetype)downloadWindowController
+{
     static TKDownloadWindowController *windowController = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -38,17 +39,20 @@ typedef NS_ENUM(NSUInteger, TKDownloadState) {
     return windowController;
 }
 
-- (void)windowDidLoad {
+- (void)windowDidLoad
+{
     [super windowDidLoad];
     
     [self setup];
 }
 
-- (void)setup {
+- (void)setup
+{
     [self downloadPlugin];
 }
 
-- (void)setupInstallBtnTitle:(NSString *)text {
+- (void)setupInstallBtnTitle:(NSString *)text
+{
     self.installButton.title = text;
     
     CGFloat stringWidth = [text widthWithFont:self.installButton.font];
@@ -56,14 +60,15 @@ typedef NS_ENUM(NSUInteger, TKDownloadState) {
     self.installButton.x = 430 - stringWidth - 40;
 }
 
-- (void)downloadPlugin {
+- (void)downloadPlugin
+{
     self.downloadState = TKDownloadStateProgress;
-    self.window.title = TKLocalizedString(@"assistant.download.title");
-    self.titleLabel.stringValue = TKLocalizedString(@"assistant.download.update");
+    self.window.title = YMLocalizedString(@"assistant.download.title");
+    self.titleLabel.stringValue = YMLocalizedString(@"assistant.download.update");
     self.progressView.doubleValue = 0;
-    [self setupInstallBtnTitle:TKLocalizedString(@"assistant.download.cancel")];
+    [self setupInstallBtnTitle:YMLocalizedString(@"assistant.download.cancel")];
     
-    [[TKVersionManager shareManager] downloadPluginProgress:^(NSProgress *downloadProgress) {
+    [[YMVersionManager shareManager] downloadPluginProgress:^(NSProgress *downloadProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.progressView.minValue = 0;
             self.progressView.maxValue = downloadProgress.totalUnitCount / 1024.0;
@@ -77,37 +82,38 @@ typedef NS_ENUM(NSUInteger, TKDownloadState) {
             if (error) {
                 self.downloadState = TKDownloadStateError;
                 if (error.code == NSURLErrorCancelled) {
-                    self.titleLabel.stringValue = TKLocalizedString(@"assistant.download.cancelTitle");
-                    [self setupInstallBtnTitle:TKLocalizedString(@"assistant.download.reDownload")];
+                    self.titleLabel.stringValue = YMLocalizedString(@"assistant.download.cancelTitle");
+                    [self setupInstallBtnTitle:YMLocalizedString(@"assistant.download.reDownload")];
                     self.progressLabel.stringValue = @"";
                 } else {
-                    self.titleLabel.stringValue = TKLocalizedString(@"assistant.download.error");
-                    [self setupInstallBtnTitle:TKLocalizedString(@"assistant.download.reInstall")];
+                    self.titleLabel.stringValue = YMLocalizedString(@"assistant.download.error");
+                    [self setupInstallBtnTitle:YMLocalizedString(@"assistant.download.reInstall")];
                 }
                 return;
             }
             self.downloadState = TKDownloadStateFinish;
-            [self setupInstallBtnTitle:TKLocalizedString(@"assistant.download.relaunch")];
-            self.titleLabel.stringValue = TKLocalizedString(@"assistant.download.install");
+            [self setupInstallBtnTitle:YMLocalizedString(@"assistant.download.relaunch")];
+            self.titleLabel.stringValue = YMLocalizedString(@"assistant.download.install");
             self.filePath = filePath;
         });
     }];
 }
 
-- (IBAction)clickInstallButton:(NSButton *)sender {
+- (IBAction)clickInstallButton:(NSButton *)sender
+{
     switch (self.downloadState) {
         case TKDownloadStateProgress: {
-            [[TKVersionManager shareManager] cancelDownload];
+            [[YMVersionManager shareManager] cancelDownload];
             break;
         }
         case TKDownloadStateFinish: {
             NSString *directoryName = [self.filePath stringByDeletingLastPathComponent];
             NSString *fileName = [[self.filePath lastPathComponent] stringByDeletingPathExtension];
             NSString *cmdString = [NSString stringWithFormat:@"cd %@ && unzip -n %@.zip && ./%@/Update.sh",directoryName, fileName, fileName];
-            [TKRemoteControlManager executeShellCommand:cmdString];
+            [YMRemoteControlManager executeShellCommand:cmdString];
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSString *cmd = @"killall WeChat && sleep 2s && open /Applications/WeChat.app";
-                [TKRemoteControlManager executeShellCommand:cmd];
+                [YMRemoteControlManager executeShellCommand:cmd];
             });
             break;
         }
